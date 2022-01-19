@@ -11,11 +11,13 @@ class PolyLR(_LRScheduler):
         super().__init__(optimizer, last_epoch=last_epoch)
 
     def get_lr(self):
-        if self.last_epoch % self.decay_iter or self.last_epoch % self.max_iter:
-            return self.base_lrs
-        else:
-            factor = (1 - self.last_epoch / float(self.max_iter)) ** self.power
-            return [factor*lr for lr in self.base_lrs]
+        factor = (1 - self.last_epoch / float(self.max_iter)) ** self.power
+        return [factor*lr for lr in self.base_lrs]
+        # if self.last_epoch % self.decay_iter or self.last_epoch % self.max_iter:
+        #     return self.base_lrs
+        # else:
+        #     factor = (1 - self.last_epoch / float(self.max_iter)) ** self.power
+        #     return [factor*lr for lr in self.base_lrs]
 
 
 class WarmupLR(_LRScheduler):

@@ -9,8 +9,8 @@ class SFNet(nn.Module):
     def __init__(self, backbone: str = 'ResNetD-18', num_classes: int = 19):
         super().__init__()
         backbone, variant = backbone.split('-')
-        self.backbone = eval(backbone)(variant)
-        self.head = SFHead(self.backbone.channels, 128 if variant == '18' else 256, num_classes)
+        self.backbone = eval(backbone+variant)()
+        self.head = SFHead(self.backbone.channels, 64 if variant == '18' else 128, num_classes)
         self.apply(self._init_weights)
 
     def _init_weights(self, m: nn.Module) -> None:

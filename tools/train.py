@@ -14,8 +14,8 @@ from torch.utils.data import DistributedSampler, RandomSampler
 from torch import distributed as dist
 import sys
 sys.path.insert(0, '.')
-from semseg.models import *
-from semseg.datasets import * 
+from semseg.models import SFNet
+from semseg.datasets import CityScapes 
 from semseg.augmentations import get_train_augmentation, get_val_augmentation
 from semseg.losses import get_loss
 from semseg.schedulers import get_scheduler
@@ -53,7 +53,7 @@ def main(cfg, gpu, save_dir):
     trainloader = DataLoader(trainset, batch_size=train_cfg['BATCH_SIZE'], num_workers=num_workers, drop_last=True, pin_memory=True, sampler=sampler)
     valloader = DataLoader(valset, batch_size=1, num_workers=1, pin_memory=True)
 
-    iters_per_epoch = len(trainset) // train_cfg['BATCH_SIZE']
+    iters_per_epoch = len(trainset) // (train_cfg['BATCH_SIZE'] * train_cfg['NUM_GPUs'])
     # class_weights = trainset.class_weights.to(device)
     loss_fn = get_loss(loss_cfg['NAME'], trainset.ignore_label, None)
     optimizer = get_optimizer(model, optim_cfg['NAME'], lr, optim_cfg['WEIGHT_DECAY'])
@@ -100,7 +100,7 @@ def main(cfg, gpu, save_dir):
 
             if miou > best_mIoU:
                 best_mIoU = miou
-                torch.save(model.module.state_dict() if train_cfg['DDP'] else model.state_dict(), save_dir / f"{model_cfg['NAME']}_{model_cfg['BACKBONE']}_{dataset_cfg['NAME']}.pth")
+                torch.save(model.module.state_dict() if train_cfg['DDP'] else model.state_dict(), save_dir / f"{model_cfg['NAME']}_{model_cfg['BACKBONE']}_{dataset_cfg['NAME']}_{best_mIoU}.pth")
             print(f"Current mIoU: {miou} Best mIoU: {best_mIoU}")
 
     writer.close()
